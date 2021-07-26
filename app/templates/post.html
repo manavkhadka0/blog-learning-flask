@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+
+<article class="card mb-3">
+    <div class="card-body d-flex">
+        <div class="">
+            <img class="rounded-circle article-img"
+                src="{{ url_for('static',filename='profile_pics/' + post.author.image_file)}}" alt="">
+        </div>
+        <div class="flex-fill">
+            <div class="article-metadata">
+                <a class="card-title link me-2" href="{{url_for('users.user_posts',username=post.author.username)}}">{{
+                    post.author.username }}</a>
+                <small class="text-muted">{{ post.date_posted.strftime("%d %b, %Y, %-I:%M:%S %p") }}</small>
+                {% if post.author == current_user %}
+                <div>
+                    <a href="{{ url_for('posts.update_post',post_id=post.id)}}"
+                        class="btn btn-primary btn-sm my-1">Update</a>
+                    <button type="button" class="btn btn-danger btn-sm m-1" data-bs-toggle="modal"
+                        data-bs-target="#exampleModal">
+                        Delete
+                    </button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Delete This Post?</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <article class="card mb-3">
+                                        <div class="card-body d-flex">
+                                            <div class="">
+                                                <img class="rounded-circle article-img"
+                                                    src="{{ url_for('static',filename='profile_pics/' + post.author.image_file)}}"
+                                                    alt="">
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="article-metadata">
+                                                    <p class="card-title link me-2">{{ post.author.username
+                                                        }}</p>
+                                                    <small class="text-muted">{{ post.date_posted.strftime("%d %b, %Y,
+                                                        %-I:%M:%S %p")
+                                                        }}</small>
+                                                </div>
+                                                <h2 class="card-title link link-info">{{ post.title.upper() }}</h2>
+                                                <p class="card-text">{{ post.content }}</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <form action="{{url_for('posts.delete_post',post_id=post.id)}}" method='POST'>
+                                        <input class="btn btn-danger" value="Delete" type="submit">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <h2 class="card-title link link-info">{{ post.title.upper() }}</h2>
+            <p class="card-text">{{ post.content }}</p>
+        </div>
+    </div>
+</article>
+
+
+
+{% endblock content %}
