@@ -1,6 +1,6 @@
 from app.users.forms import RegistrationForm,LoginForm,RequestResetForm,ResetPasswordForm,UpdateAccountForm
 from flask import Blueprint,flash,redirect,url_for,render_template,request
-from app.users.utils import save_picture,send_reset_email
+from app.users.utils import save_picture, send_confirmation_email,send_reset_email
 from flask_login import current_user,login_required,login_user,logout_user
 from app.models import User,Post
 from app import bcrypt,db
@@ -18,10 +18,23 @@ def register():
         user = User(username=form.username.data,email=form.email.data,password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        flash(f'Account created for {form.username.data}! You can now login', 'success')
+        send_confirmation_email(user)
+        flash('An email has been sent with instructions to verify your account.', 'info')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
 
+@users.route("/register/<token>", methods=['GET', 'POST'])
+def verification_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+    user = User.verify_confirmation_token(token)
+    if user is None:
+        flash('That is an invalid or expired token', 'warning')
+        return redirect(url_for('users.login'))
+    user.confirm = True
+    db.session.commit()
+    flash(f'Account created! You can now login', 'success')
+    return redirect(url_for('users.login'))
 
 @users.route("/login", methods=['GET', 'POST'])
 def login():
@@ -30,12 +43,15 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password,form.password.data):
-            login_user(user,remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.home'))
+        if user.confirm == True:
+            if user and bcrypt.check_password_hash(user.password,form.password.data):
+                login_user(user,remember=form.remember.data)
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect(url_for('main.home'))
+            else:
+                flash('Login Unsuccessful. Please check Email and password', 'danger')
         else:
-            flash('Login Unsuccessful. Please check Email and password', 'danger')
+            flash('Login Unsuccessful. Please verify your account first!', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 

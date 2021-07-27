@@ -3,6 +3,8 @@ from flask_login import UserMixin
 from flask import current_app
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from random import randint
+
 
 
 @login_manager.user_loader
@@ -16,10 +18,12 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
+    confirm = db.Column(db.Boolean,nullable=False,default=False)
     posts = db.relationship('Post', backref='author', lazy=True)
 
     def get_reset_token(self, expires_sec=900):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
+        print(s.dumps({'user_id': self.id}).decode('utf-8'))
         return s.dumps({'user_id': self.id}).decode('utf-8')
 
     @staticmethod
@@ -27,9 +31,26 @@ class User(db.Model, UserMixin):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token)['user_id']
+            print(user_id)
         except:
             return None
         return User.query.get(user_id)
+
+    def get_confirmation_token(self, expires_sec=900):
+        s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
+        print(s.dumps({'user_id': self.id}).decode('utf-8'))
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+        
+    @staticmethod
+    def verify_confirmation_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+            print(user_id)
+        except:
+            return None
+        return User.query.get(user_id) 
+
 
 
     def __repr__(self):
