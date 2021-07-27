@@ -1,5 +1,5 @@
 body {
-  background: #fafafa;
+  background-color: #a2c9e088;
   color: #333333;
   margin-top: 5rem;
 }
@@ -15,6 +15,12 @@ h6 {
 
 .bg-steel {
   background-color: #5f788a;
+}
+
+.site-header .logo {
+  height: 30px;
+  width: 80px;
+  filter: invert(100%) brightness(10);
 }
 
 .site-header .navbar-nav .nav-link {
